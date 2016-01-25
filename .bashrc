@@ -9,6 +9,8 @@ function ggo() {
   declare -a brancharray
   j=0
 
+  shopt -s nocasematch
+
   if [ ! -d ".git" ]; then
     echo "This is not a working git repository"
     return 1
