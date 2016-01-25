@@ -1,4 +1,3 @@
-
 LGRN='\033[1;32m'
 GRN='\033[0;32m'
 YLW='\033[1;33m'
@@ -15,15 +14,14 @@ function ggo() {
     return 1
   fi
 
-  if [ "$1" ]; then
-    echo "Searching current git branches for '$1'"
-  else
+  # Our main command
+  output=$(git branch)
+  current=$(git rev-parse --abbrev-ref HEAD)
+
+  if ! [ "$1" ]; then
     echo "Usage: ggo <branchname>"
     return 2
   fi
-
-  # Our main command
-  output=$(git branch)
 
   # While loop but not on STDIN
   while read -r line <&9; do
@@ -39,7 +37,7 @@ function ggo() {
 
   # LOGIC; No matches?
   if [ "$j" -eq 0 ]; then
-    echo "No matching git branches found"
+    printf "No git branches matching ${RED}$1${NC} found"
     return 3
   fi
 
@@ -48,14 +46,14 @@ function ggo() {
     printf "Input match number (${RED}1${NC} to ${RED}$j${NC}) to switch to that branch: "
     read -r gitbranch
     
-    if [ $gitbranch ]; then
-      if [ $gitbranch -gt $j ]; then
+    if [ -n $gitbranch ]; then
+      if [[ $gitbranch -gt $j || $gitbranch -eq 0 ]]; then
         echo "That is not a valid match number!"
         return 4
       fi
-    
-      if ! [ $gitbranch -eq $gitbranch 2> /dev/null ]; then
-        echo "That is not a match number!"
+
+      if [[ -n ${gitbranch//[1-9]/} ]]; then
+        echo "Perhaps the word 'number' is too difficult?"
         return 5
       else
         printf "Switching to git branch '${CYN}${brancharray[$gitbranch-1]}${NC}'"
