@@ -1,11 +1,10 @@
-LGRN='\033[1;32m'
-GRN='\033[0;32m'
-YLW='\033[1;33m'
-ORG='\033[0;33m'
-CYN='\033[0;36m'
-RED='\033[1;31m'
-NC='\033[0m'
+#!/bin/bash
 
+for file in "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../lib/*; do source $file; done
+
+# bash command 'ggo'
+# accepts one argument, which it searches for in the git branches you
+# have open;
 function ggo() {
   declare -a brancharray
   j=0
@@ -13,7 +12,7 @@ function ggo() {
   shopt -s nocasematch
   set -f
 
-  if [ ! -d ".git" ]; then
+  if [ ! -d "$(git rev-parse --show-toplevel)/.git" ]; then
     echo "This is not a working git repository"
     return 1
   fi
@@ -35,10 +34,10 @@ function ggo() {
       let "j += 1"
       if [[ ${arr[1]} ]]; then
         brancharray+=(${arr[1]})
-        printf "Match ${RED}$j${NC}: ${CYN}${arr[1]}${NC} (${ORG}current${NC})\n"
+        printf "Match ${COLOUR_RED}$j${COLOUR_NONE}: ${COLOUR_CYAN}${arr[1]}${COLOUR_NONE} (${COLOUR_ORANGE}current${COLOUR_NONE})\n"
       else
         brancharray+=($line)
-        printf "Match ${RED}$j${NC}: ${CYN}$line${NC}\n"
+        printf "Match ${COLOUR_RED}$j${COLOUR_NONE}: ${COLOUR_CYAN}$line${COLOUR_NONE}\n"
       fi
     fi
 
@@ -49,15 +48,15 @@ function ggo() {
 
   # LOGIC; No matches?
   if [ "$j" -eq 0 ]; then
-    printf "No git branches matching ${RED}$1${NC} found"
+    printf "No git branches matching ${COLOUR_RED}$1${COLOUR_NONE} found"
     return 3
   fi
 
   # LOGIC; More than 1 match? Otherwise just 1 match;
   if [ "$j" -gt 1 ]; then
-    printf "Input match number (${RED}1${NC} to ${RED}$j${NC}) to switch to that branch: "
+    printf "Input match number (${COLOUR_RED}1${COLOUR_NONE} to ${COLOUR_RED}$j${COLOUR_NONE}) to switch to that branch: "
     read -r gitbranch
-    
+
     if [ -n $gitbranch ]; then
       if [[ $gitbranch -gt $j || $gitbranch -eq 0 ]]; then
         echo "That is not a valid match number!"
@@ -69,11 +68,11 @@ function ggo() {
         return 5
       else
         if [[ ${brancharray[$gitbranch-1]} -eq $current ]]; then
-          printf "You are already on that branch (${ORG}$current${NC})"
-	  return 6
-	fi
+          printf "You are already on that branch (${COLOUR_ORANGE}$current${COLOUR_NONE})"
+     return 6
+fi
 
-        printf "Switching to git branch '${CYN}${brancharray[$gitbranch-1]}${NC}'"
+        printf "Switching to git branch '${COLOUR_CYAN}${brancharray[$gitbranch-1]}${COLOUR_NONE}'"
         git checkout -q ${brancharray[$gitbranch-1]}
         return 7
       fi
@@ -83,7 +82,8 @@ function ggo() {
     fi
 
   else
-    printf "Switching to git branch '${CYN}${brancharray[0]}${NC}'"
+    printf "Switching to git branch '${COLOUR_CYAN}${brancharray[0]}${COLOUR_NONE}'"
     git checkout -q ${brancharray[0]}
   fi
 }
+ggo $@
